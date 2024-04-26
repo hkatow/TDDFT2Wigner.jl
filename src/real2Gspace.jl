@@ -77,20 +77,68 @@ function get_Gvector(salmon::SYSTEM)
     bv=salmon.bvec
     temp1=[zeros(Int64,3) for ig=1:ng]
     temp2=zeros(ng)
-    nhalf=div.(nr,2)
+    # nhalf=div.(nr,2)
     ig=1
-    for ir3=1:nr[3],ir2=1:nr[2],ir1=1:nr[1]
-        v=[ir1-1,ir2-1,ir3-1]
-        for i=1:3
-            (v[i] > nhalf[i])&&(v[i]+=-nr[i])
+    for ir3=1:nr[3]
+        # folding ig3
+        if mod(nr[3],2) == 0
+            if ir3 > div(nr[3],2)+1
+                ig3=ir3-nr[3]
+            else
+                ig3=ir3
+            end
+        else
+            if ir3 > div(nr[3]-1,2)+1
+                ig3=ir3-nr[3]
+            else
+                ig3=ir3
+            end
         end
-        temp1[ig]=v
-        u=zeros(3)
-        for id=1:3
-            u+=v[id] .* bv[id]
+        for ir2=1:nr[2]
+            # folding ig2
+            if mod(nr[2],2) == 0
+                if ir2 > div(nr[2],2)+1
+                    ig2=ir2-nr[2]
+                else
+                    ig2=ir2
+                end
+            else
+                if ir2 > div(nr[2]-1,2)+1
+                    ig2=ir2-nr[2]
+                else
+                    ig2=ir2
+                end
+            end
+            for ir1=1:nr[1]
+                # folding ig1
+                if mod(nr[1],2) == 0
+                    if ir1 > div(nr[1],2)+1
+                        ig1=ir1-nr[1]
+                    else
+                        ig1=ir1
+                    end
+                else
+                    if ir1 > div(nr[1]-1,2)+1
+                        ig1=ir1-nr[1]
+                    else
+                        ig1=ir1
+                    end
+                end
+
+                # v=[ir1-1,ir2-1,ir3-1]
+                v=[ig1-1,ig2-1,ig3-1]
+                
+                temp1[ig]=v
+
+
+                u=zeros(3)
+                for id=1:3
+                    u+=v[id] .* bv[id]
+                end
+                temp2[ig]=u'*u/2.0 
+                ig+=1
+            end
         end
-        temp2[ig]=u'*u/2.0 
-        ig+=1
     end
     G.vector=temp1
     G.norm=temp2

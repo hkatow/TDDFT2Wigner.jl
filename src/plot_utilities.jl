@@ -1,14 +1,58 @@
-function get_px_rx_plane(salmon::SYSTEM,prange::Vector{Float64},rrange::Vector{Float64};ngrid::Int64)
+function get_rxpx_grid(salmon::SYSTEM;prange::Vector{Float64},rrange::Vector{Float64},nr::Int64)
+    return get_grid(salmon;prange=prange,rrange=rrange,nr=nr,rdim=1,pdim=1)
+end
+function get_rypy_grid(salmon::SYSTEM;prange::Vector{Float64},rrange::Vector{Float64},nr::Int64)
+    return get_grid(salmon;prange=prange,rrange=rrange,nr=nr,rdim=2,pdim=2)
+end
+function get_rzpz_grid(salmon::SYSTEM;prange::Vector{Float64},rrange::Vector{Float64},nr::Int64)
+    return get_grid(salmon;prange=prange,rrange=rrange,nr=nr,rdim=3,pdim=3)
+end
+
+function get_grid(salmon::SYSTEM;prange::Vector{Float64},rrange::Vector{Float64},nr::Int64,rdim::Int64=1,pdim::Int64=1)
+    # Possible p point is included in {k+G} grid.
+    # k is a Bloch wave vector
+    # We assume that kx = n*Gx/m where n,m are positive integers.
     k=salmon.kvec
     nk_all=prod(salmon.num_kgrid)
     # find ekx
-    dkx=0.0
+    klist=[k[ik][pdim] for ik=1:nk_all]
+    # println("kx")
+    println(klist)
+    dk=maximum(klist)
+    tol=10^(-5)
     for ik=1:nk_all
-        if k[1] > 0 && k[2] == 0 && k[3] == 0
-            (dkx)
+        if abs(klist[ik]) < dk && abs(klist[ik]) > tol
+            dk = abs(klist[ik])
         end
     end
-    return
+    
+    # dkx is now smallest non-zero value along kx axis
+    fp1=mod(prange[1],dk)
+    fp2=mod(prange[2],dk)
+    
+    p1=prange[1]+fp1
+    p2=prange[2]-fp2
+    np=Int64(round((p2-p1)/dk))
+    
+    # drx=abs(salmon.avec[1])/salmon.num_rgrid[1]
+    dr=(rrange[2]-rrange[1])/nr
+    println("Generate grid on (x,p) space.")
+    println("dk ",dk)
+    println("np ",np)
+    println("p margin : fp1,fp2 ",fp1," ",fp2)
+    println("dr ",dr)
+    println("nr ",nr)
+    xpgrid=[[zeros(3),zeros(3)] for ir=1:nr,ip=1:np]
+    for ip=1:np
+        p=p1+(ip-1)*dk
+        for ir=1:nr
+            r=rrange[1]+(ir-1)*dr
+
+            xpgrid[ir,ip][1][rdim]=r
+            xpgrid[ir,ip][2][pdim]=p
+        end
+    end
+    return (grid=xpgrid, np=np)
 end
 
 # function plot_density(dm::DM,salmon::SYSTEM,dir::String,interpolation::Int64)

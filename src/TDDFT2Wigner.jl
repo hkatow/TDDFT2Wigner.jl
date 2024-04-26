@@ -14,6 +14,7 @@ include("grammatrix.jl")
 # include("densitymatrix.jl")
 include("real2Gspace.jl")
 include("wignerfunction.jl")
+include("plot_utilities.jl")
 # include("plot_density.jl")
 
 export read_salmon, read_wfn, real2Gspace, grammatrix, wignerfunction
