@@ -31,52 +31,55 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
 
     for ik=1:nk_all
         k=salmon.kvec[ik]
-        for ib=1:nb
-            for iG=1:nG
-                G1=copy(gvec.vector[iG])
-                # Extract wfn amplitude C_{km,p-2k-G}
-                # reciplocal coordinate
-                G2=-2(p+k)-G1
-                # res : remainder
-                # res=mod.(round.(G2,digits=5),1)
-                res=abs.(round.(G2)-round.(G2,digits=5))
+        # check 
+        if isinteger(2(p+k))
+            for ib=1:nb
+                for iG=1:nG
+                    G1=copy(gvec.vector[iG])
+                    # Extract wfn amplitude C_{km,p-2k-G}
+                    # reciplocal coordinate
+                    G2=-2(p+k)-G1
+                    # res : remainder
+                    # res=mod.(round.(G2,digits=5),1)
+                    res=abs.(round.(G2)-round.(G2,digits=5))
 
-                if all(i -> i < tol, res) 
-                    IG1=copy(gvec.vector[iG])
-                    IG2=Int64.(round.(G2))
-                    # Check if G2 is in [ Gmin, Gmax ]
-                    condition=true
-                    for id=1:3
-                        condition *= (Gmin[id] <= IG2[id])&&(IG2[id] <= Gmax[id])
-                    end
-                    # if condition is true, there is a corrsponding G vector
-                    if condition
-                        flag=true
-                        # Index of G1 and G2
+                    if all(i -> i < tol, res) 
+                        IG1=copy(gvec.vector[iG])
+                        IG2=Int64.(round.(G2))
+                        # Check if G2 is in [ Gmin, Gmax ]
+                        condition=true
                         for id=1:3
-                            ( IG1[id] < 0 )&&(IG1[id]+=nr[id])
-                            IG1[id]+=1
-                            ( IG2[id] < 0 )&&(IG2[id]+=nr[id])
-                            IG2[id]+=1
+                            condition *= (Gmin[id] <= IG2[id])&&(IG2[id] <= Gmax[id])
                         end
-                        # iG2=IG[1]+nr[1]*(IG[2]-1)+nr[1]*nr[2]*(IG[3]-1)
-                        # phase factor exp{-i(2G1+2k-p)x}
+                        # if condition is true, there is a corrsponding G vector
+                        if condition
+                            flag=true
+                            # Index of G1 and G2
+                            for id=1:3
+                                ( IG1[id] < 0 )&&(IG1[id]+=nr[id])
+                                IG1[id]+=1
+                                ( IG2[id] < 0 )&&(IG2[id]+=nr[id])
+                                IG2[id]+=1
+                            end
+                            # iG2=IG[1]+nr[1]*(IG[2]-1)+nr[1]*nr[2]*(IG[3]-1)
+                            # phase factor exp{-i(2G1+2k-p)x}
 
-                        v=2(G1 + k +p)
-                        v_cart=zeros(3)
-                        for id=1:3
-                            v_cart+=v[id] * salmon.bvec[id]
+                            v=2(G1 + k +p)
+                            v_cart=zeros(3)
+                            for id=1:3
+                                v_cart+=v[id] * salmon.bvec[id]
+                            end
+                            u_cart=zeros(3)
+                            u_cart=x
+                            # for id=1:3
+                            #     u_cart+=x[id] #* salmon.avec[id]
+                            # end
+                            phase=(1/2pi)^2*exp(-im*(v_cart'*u_cart))
+                            # Compute Wigner Distribution function
+                            C1=wfg.orbital[IG1[1],IG1[2],IG1[3],ib,ik]
+                            C2=wfg.orbital[IG2[1],IG2[2],IG2[3],ib,ik]
+                            wigner+=phase* conj(C1)*C2
                         end
-                        u_cart=zeros(3)
-                        u_cart=x
-                        # for id=1:3
-                        #     u_cart+=x[id] #* salmon.avec[id]
-                        # end
-                        phase=exp(-im*(v_cart'*u_cart))
-                        # Compute Wigner Distribution function
-                        C1=wfg.orbital[IG1[1],IG1[2],IG1[3],ib,ik]
-                        C2=wfg.orbital[IG2[1],IG2[2],IG2[3],ib,ik]
-                        wigner+=phase* conj(C1)*C2
                     end
                 end
             end
@@ -86,6 +89,15 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
     return wigner
 end
 
+function isinteger(vec::Vector{Float64})::Bool
+    tol=10^(-5)
+    res=abs.(round.(vec)-round.(vec,digits=5))
+    val=false
+    if all(i -> i < tol, res) 
+        val=true
+    end
+    return val
+end
 
 function get_index(vec::Vector{Float64},salmon::SYSTEM)::Vector{Int64}
     # find corresponding index to a given vector in periodic boundary condition
