@@ -4,6 +4,7 @@ function read_salmon_input(file::String,file_kpt)::SYSTEM
     close(io)
     nline=length(doc)
     salmon=SYSTEM()
+    doc=replace.(doc,"d0" => "")
     for il=1:nline
         line=doc[il]
         words=split(line,"=")
