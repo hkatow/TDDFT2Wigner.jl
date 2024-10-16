@@ -11,6 +11,7 @@ using Plots
 include("structures.jl")
 include("read_salmon.jl")
 include("read_salmon_rt.jl")
+include("read_occupation.jl")
 include("grammatrix.jl")
 # include("densitymatrix.jl")
 include("real2Gspace.jl")
