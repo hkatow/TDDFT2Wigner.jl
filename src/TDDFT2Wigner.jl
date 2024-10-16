@@ -19,6 +19,6 @@ include("wignerfunction.jl")
 include("plot_utilities.jl")
 # include("plot_density.jl")
 
-export read_salmon, read_wfn, real2Gspace, grammatrix, wignerfunction
+export read_occupation, read_salmon, read_wfn, real2Gspace, grammatrix, wignerfunction
 
 end
