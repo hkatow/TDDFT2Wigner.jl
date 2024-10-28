@@ -9,7 +9,6 @@ FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 FortranFiles = "c58ffaec-ab22-586d-bfc5-781a99fd0b10"
 FourierTools = "b18b359b-aebc-45ac-a139-9c0ccbb2871e"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
 julia = "1.6"
