@@ -5,12 +5,12 @@ For Bloch wave vector k, the momentum p must satisfy a condition that G'=p-2k-G
 is placed on the G vector grid. 
 
 """
-function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64},p::Vector{Float64};verbose=0)
+function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64},p::Vector{Float64},nb::Int64;occ=nothing, isocc::Bool=false,verbose=0)
     nG=length(gvec.norm)
     nk_all=prod(wfg.nk)
     nr=wfg.nr
     # nb=wfg.nb
-    nb=16
+    # nb=16
     gmax=div.(nr,2)
     tol=10^(-5)
     wigner=ComplexF64(0.0)
@@ -33,6 +33,7 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
         k=salmon.kvec[ik]
         # check 
         if isinteger(2(p+k))
+            (verbose==1)&&(println("ik=$ik 2(p+k) is integer"))
             for ib=1:nb
                 for iG=1:nG
                     G1=copy(gvec.vector[iG])
@@ -44,6 +45,7 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
                     res=abs.(round.(G2)-round.(G2,digits=5))
 
                     if all(i -> i < tol, res) 
+                        (verbose==1)&&(println("ib=$ib iG=$iG G2 is integer"))
                         IG1=copy(gvec.vector[iG])
                         IG2=Int64.(round.(G2))
                         # Check if G2 is in [ Gmin, Gmax ]
@@ -53,6 +55,7 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
                         end
                         # if condition is true, there is a corrsponding G vector
                         if condition
+                            (verbose==1)&&(println("              G2 is in [Gmin, Gmax]"))
                             flag=true
                             # Index of G1 and G2
                             for id=1:3
@@ -78,7 +81,11 @@ function wignerfunction(salmon::SYSTEM,wfg::WFN,gvec::Gvector,x::Vector{Float64}
                             # Compute Wigner Distribution function
                             C1=wfg.orbital[IG1[1],IG1[2],IG1[3],ib,ik]
                             C2=wfg.orbital[IG2[1],IG2[2],IG2[3],ib,ik]
-                            wigner+=phase* conj(C1)*C2
+                            if isocc
+                                wigner+=occ[ib,ik]*phase* conj(C1)*C2
+                            else
+                                wigner+=phase* conj(C1)*C2
+                            end
                         end
                     end
                 end

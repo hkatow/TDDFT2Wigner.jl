@@ -17,7 +17,7 @@ function get_grid(salmon::SYSTEM;prange::Vector{Float64},rrange::Vector{Float64}
     # find ekx
     klist=[k[ik][pdim] for ik=1:nk_all]
     # println("kx")
-    println(klist)
+    # println(klist)
     dk=maximum(klist)
     tol=10^(-5)
     for ik=1:nk_all
