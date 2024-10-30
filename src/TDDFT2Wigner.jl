@@ -7,7 +7,7 @@ using FortranFiles
 using FFTW
 using FourierTools
 using Dates
-using Plots
+# using Plots
 include("structures.jl")
 include("read_salmon.jl")
 include("read_salmon_rt.jl")
